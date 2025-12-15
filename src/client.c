@@ -1,7 +1,7 @@
 #include <stdarg.h>
-#include "common.h"
-#include "net.h"
-#include "util.h"
+#include "headers/common.h"
+#include "headers/net.h"
+#include "headers/util.h"
 
 static void sendf(FILE *out, const char *fmt, ...) {
     char buf[LINE_MAX];

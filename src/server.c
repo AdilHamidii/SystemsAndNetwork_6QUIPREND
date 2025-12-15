@@ -1,7 +1,7 @@
-#include "common.h"
-#include "net.h"
-#include "util.h"
-#include "game.h"
+#include "headers/common.h"
+#include "headers/net.h"
+#include "headers/util.h"
+#include "headers/game.h"
 #include <stdarg.h>
 
 typedef struct {
@@ -162,6 +162,8 @@ int main(int argc, char **argv) {
                         printf("J%d (%s) joue %d\n",
                                i + 1, players[i].name, c);
                     }
+                    else printf("J%d (%s) envoi commande inconnue: %s\n",
+                                i + 1, players[i].name, line);
 
                 }
             }

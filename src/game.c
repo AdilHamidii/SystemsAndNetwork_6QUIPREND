@@ -1,4 +1,4 @@
-#include "game.h"
+#include "headers/game.h"
 
 int bulls(int c) {
     if (c == 55) return 7;

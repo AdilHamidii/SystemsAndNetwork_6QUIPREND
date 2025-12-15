@@ -1,21 +1,28 @@
 CC=gcc
-CFLAGS=-Wall -Wextra -std=c11
+CFLAGS=-Wall -Wextra -std=c11 -Isrc/headers
 
-OBJS_COMMON=net.o util.o game.o
+SRCDIR=src
+OBJDIR=bin
+
+OBJS_COMMON=$(OBJDIR)/net.o $(OBJDIR)/util.o $(OBJDIR)/game.o
 
 all: server client robot robot_grok
 
-server: server.o $(OBJS_COMMON)
-	$(CC) $(CFLAGS) -o server server.o $(OBJS_COMMON)
+server: $(OBJDIR)/server.o $(OBJS_COMMON)
+	$(CC) $(CFLAGS) -o server $^
 
-client: client.o $(OBJS_COMMON)
-	$(CC) $(CFLAGS) -o client client.o $(OBJS_COMMON)
+client: $(OBJDIR)/client.o $(OBJS_COMMON)
+	$(CC) $(CFLAGS) -o client $^
 
-robot: robot.o $(OBJS_COMMON)
-	$(CC) $(CFLAGS) -o robot robot.o $(OBJS_COMMON)
+robot: $(OBJDIR)/robot.o $(OBJS_COMMON)
+	$(CC) $(CFLAGS) -o robot $^
 
-robot_grok: robot_grok.o $(OBJS_COMMON)
-	$(CC) $(CFLAGS) -o robot_grok robot_grok.o $(OBJS_COMMON)
+robot_grok: $(OBJDIR)/robot_grok.o $(OBJS_COMMON)
+	$(CC) $(CFLAGS) -o robot_grok $^
+
+$(OBJDIR)/%.o: $(SRCDIR)/%.c
+	mkdir -p $(OBJDIR)
+	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	rm -f *.o server client robot robot_grok
+	rm -rf $(OBJDIR) server client robot robot_grok
