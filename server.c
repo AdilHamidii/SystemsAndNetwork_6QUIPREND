@@ -17,7 +17,7 @@ typedef struct {
     int chosen_row;
 } Player;
 
-/* ---------- helpers ---------- */
+
 
 static void sendf(FILE *out, const char *fmt, ...) {
     char buf[LINE_MAX];
@@ -151,7 +151,7 @@ int main(int argc, char **argv) {
 
                     char line[LINE_MAX];
                     recv_line(players[i].in, line, sizeof(line));
-
+                       
                     if (strncmp(line, "JOUER ", 6) == 0) {
                         int c = atoi(line + 6);
                         game_hand_remove(&game, i, c);
@@ -162,6 +162,7 @@ int main(int argc, char **argv) {
                         printf("J%d (%s) joue %d\n",
                                i + 1, players[i].name, c);
                     }
+
                 }
             }
         }

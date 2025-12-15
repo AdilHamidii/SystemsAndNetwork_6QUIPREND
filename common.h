@@ -1,19 +1,37 @@
 #ifndef COMMON_H
 #define COMMON_H
 
+#define _POSIX_C_SOURCE 200112L
+
+/* ---------- Standard C ---------- */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
-#include <unistd.h>
 #include <errno.h>
 #include <time.h>
-#include <arpa/inet.h>
-#include <netdb.h>
+#include <stdarg.h>
+
+/* ---------- POSIX ---------- */
+#include <unistd.h>
+#include <fcntl.h>
+#include <signal.h>
+
+/* ---------- Networking ---------- */
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/select.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <netdb.h>
 
+
+
+// MULTI THREADING HEADERS 
+#include <pthread.h>
+
+
+/* ---------- Game constants ---------- */
 #define MAX_PLAYERS 10
 #define MIN_PLAYERS 2
 
