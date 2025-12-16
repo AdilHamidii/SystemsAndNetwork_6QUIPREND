@@ -3,11 +3,18 @@
 \usepackage[T1]{fontenc}
 \usepackage[french]{babel}
 \usepackage{geometry}
+\usepackage{verbatim}
+
 \geometry{margin=2cm}
+
 \begin{document}
-\section*{Synthèse de partie — 6 qui prend}
+
+\section*{Rapport de partie — 6 qui prend}
+
 \subsection*{Statistiques}
-\begin{verbatim}
-\input{logs/stats.txt}
-\end{verbatim}
+\verbatiminput{logs/stats.txt}
+
+\subsection*{Journal complet}
+\verbatiminput{logs/partie_1.log}
+
 \end{document}

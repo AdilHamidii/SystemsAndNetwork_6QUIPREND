@@ -1,5 +1,4 @@
 #include "headers/util.h"
-#include <sys/stat.h>
 
 void die(const char *m) {
     perror(m);
@@ -26,14 +25,4 @@ void trim_crlf(char *s) {
         s[n-1] = 0;
         n--;
     }
-}
-
-int ensure_dir(const char *path) {
-    struct stat st;
-    if (stat(path, &st) == 0) {
-        if (S_ISDIR(st.st_mode)) return 1;
-        return 0;
-    }
-    if (mkdir(path, 0755) == 0) return 1;
-    return 0;
 }

@@ -1,5 +1,6 @@
 #include "headers/game.h"
 
+// Retourne le nombre de têtes de boeuf associé à une carte.
 int bulls(int c) {
     if (c == 55) return 7;
     if (c % 11 == 0) return 5;
@@ -14,6 +15,7 @@ static void swap_int(int *a, int *b) {
     *b = t;
 }
 
+// Mélange tout le paquet avant de distribuer.
 void game_shuffle(Game *g) {
     srand((unsigned)time(NULL) ^ (unsigned)getpid());
     for (int i = DECK_SIZE - 1; i > 0; i--) {
@@ -22,6 +24,7 @@ void game_shuffle(Game *g) {
     }
 }
 
+// Initialise l'état du jeu pour un nombre donné de joueurs.
 void game_init(Game *g, int nplayers) {
     memset(g, 0, sizeof(*g));
     g->nplayers = nplayers;
@@ -39,6 +42,7 @@ void game_init(Game *g, int nplayers) {
     game_shuffle(g);
 }
 
+// Pose la première carte sur chacune des quatre rangées.
 void game_setup_rows(Game *g) {
     for (int r = 0; r < ROWS; r++) {
         g->rows[r].len = 1;
@@ -46,6 +50,7 @@ void game_setup_rows(Game *g) {
     }
 }
 
+// Distribue et trie les mains des joueurs.
 void game_deal(Game *g) {
     for (int p = 0; p < g->nplayers; p++) {
         g->hand_len[p] = HAND_SIZE;
@@ -117,6 +122,7 @@ static int min_bulls_row(Game *g) {
     return best;
 }
 
+// Insère une carte dans la table ou fait ramasser une rangée si nécessaire.
 int game_place_card(Game *g, int pid, int c, int chosen_row_if_needed, int *out_row_taken, int *out_bulls_taken) {
     int taken_row = -1;
     int bulls_taken = 0;
@@ -147,6 +153,7 @@ int game_place_card(Game *g, int pid, int c, int chosen_row_if_needed, int *out_
     return 1;
 }
 
+// Résout l'ordre complet d'un tour en triant les cartes jouées.
 void game_apply_turn(Game *g, int chosen_row[MAX_PLAYERS], int out_taken_row[MAX_PLAYERS], int out_bulls[MAX_PLAYERS]) {
     int order[MAX_PLAYERS];
     for (int i = 0; i < g->nplayers; i++) order[i] = i;
@@ -186,12 +193,14 @@ void game_apply_turn(Game *g, int chosen_row[MAX_PLAYERS], int out_taken_row[MAX
     }
 }
 
+// Vérifie la condition d'arrêt (score limite ou fin de pioche).
 int game_over(Game *g, int limit) {
     for (int p = 0; p < g->nplayers; p++) if (g->scores[p] >= limit) return 1;
     if (g->fin) return 1;
     return 0;
 }
 
+// Construit la représentation textuelle de la table (R1:/R2:/...).
 void game_table_string(Game *g, char *buf, int cap) {
     char tmp[256];
     buf[0] = 0;
@@ -206,6 +215,7 @@ void game_table_string(Game *g, char *buf, int cap) {
     }
 }
 
+// Exporte la main ordonnée d'un joueur sous forme de ligne.
 void game_hand_string(Game *g, int pid, char *buf, int cap) {
     char tmp[64];
     buf[0] = 0;
@@ -216,6 +226,7 @@ void game_hand_string(Game *g, int pid, char *buf, int cap) {
     }
 }
 
+// Formate les scores courants pour diffusion aux clients.
 void game_score_string(Game *g, char *buf, int cap) {
     char tmp[64];
     buf[0] = 0;

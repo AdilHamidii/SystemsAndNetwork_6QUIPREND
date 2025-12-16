@@ -3,11 +3,14 @@
 #include "headers/util.h"
 #include "headers/game.h"
 
+// Extrait les valeurs entières de la main envoyée par le serveur.
 static int parse_hand(const char *line, int *cards, int cap) {
     int n = 0;
     const char *p = line;
+
     while (*p && *p != ' ') p++;
     while (*p == ' ') p++;
+
     while (*p && n < cap) {
         int v = atoi(p);
         if (v > 0) cards[n++] = v;
@@ -17,90 +20,75 @@ static int parse_hand(const char *line, int *cards, int cap) {
     return n;
 }
 
+// Reconstruit les quatre rangées décrites dans la ligne R1:/R2:.
 static void parse_table_rows(const char *line, Row rows[ROWS]) {
-    for (int r = 0; r < ROWS; r++) { rows[r].len = 0; }
+    for (int r = 0; r < ROWS; r++) rows[r].len = 0;
+
     const char *p = line;
-    while (*p && *p != '|') p++;
-    p = line;
     for (int r = 0; r < ROWS; r++) {
         while (*p && *p != ':') p++;
         if (!*p) break;
         p++;
         while (*p == ' ') p++;
+
         while (*p && *p != '|') {
             int v = atoi(p);
-            if (v > 0 && rows[r].len < ROW_MAX) rows[r].cards[rows[r].len++] = v;
+            if (v > 0 && rows[r].len < ROW_MAX)
+                rows[r].cards[rows[r].len++] = v;
+
             while (*p && *p != ' ' && *p != '|') p++;
             while (*p == ' ') p++;
         }
-        while (*p && *p != 'R' && *p != 0) p++;
+        while (*p && *p != 'R')
+            p++;
     }
 }
 
+// Additionne les têtes de bœuf présentes dans une rangée.
 static int row_bulls_local(Row *r) {
     int s = 0;
-    for (int i = 0; i < r->len; i++) s += bulls(r->cards[i]);
+    for (int i = 0; i < r->len; i++)
+        s += bulls(r->cards[i]);
     return s;
 }
 
+// Choisit la rangée la moins pénalisante lorsqu'on doit ramasser.
 static int choose_row_min_bulls(Row rows[ROWS]) {
     int best = 0;
     int bestv = row_bulls_local(&rows[0]);
     for (int r = 1; r < ROWS; r++) {
         int v = row_bulls_local(&rows[r]);
-        if (v < bestv) { bestv = v; best = r; }
-    }
-    return best;
-}
-
-static int best_row_for_card_local(Row rows[ROWS], int c) {
-    int best = -1;
-    int bestdiff = 0x7fffffff;
-    for (int r = 0; r < ROWS; r++) {
-        int last = rows[r].cards[rows[r].len - 1];
-        if (c > last) {
-            int d = c - last;
-            if (d < bestdiff) { bestdiff = d; best = r; }
+        if (v < bestv) {
+            bestv = v;
+            best = r;
         }
     }
     return best;
 }
 
-static int choose_card_heuristic(int *hand, int hn, Row rows[ROWS]) {
-    int bestc = hand[0];
-    int bestrisk = 0x7fffffff;
-
-    for (int i = 0; i < hn; i++) {
-        int c = hand[i];
-        int r = best_row_for_card_local(rows, c);
-        int risk = 0;
-        if (r < 0) {
-            risk = 10000 + bulls(c);
-        } else {
-            int len = rows[r].len;
-            if (len == ROW_MAX) {
-                risk = 5000 + row_bulls_local(&rows[r]);
-            } else {
-                risk = (c - rows[r].cards[len - 1]) + (len * 10);
-            }
-        }
-        if (risk < bestrisk) { bestrisk = risk; bestc = c; }
-    }
-
-    return bestc;
+// Renvoie la plus petite carte encore disponible dans la main.
+static int choose_smallest_card(int *hand, int hn) {
+    if (hn <= 0) return -1;
+    int m = hand[0];
+    for (int i = 1; i < hn; i++)
+        if (hand[i] < m)
+            m = hand[i];
+    return m;
 }
 
+// Retire une carte déjà jouée tout en compactant la main locale.
 static void remove_from_hand(int *hand, int *hn, int c) {
-    int n = *hn;
-    for (int i = 0; i < n; i++) {
+    for (int i = 0; i < *hn; i++) {
         if (hand[i] == c) {
-            for (int j = i + 1; j < n; j++) hand[j-1] = hand[j];
-            *hn = n - 1;
+            for (int j = i + 1; j < *hn; j++)
+                hand[j - 1] = hand[j];
+            (*hn)--;
             return;
         }
     }
 }
 
+// Client automatique minimaliste qui suit le protocole texte.
 int main(int argc, char **argv) {
     if (argc < 4) {
         fprintf(stderr, "Usage: %s <host> <port> <pseudo>\n", argv[0]);
@@ -114,22 +102,16 @@ int main(int argc, char **argv) {
     FILE *out = fdopen_w(fd);
     if (!in || !out) die("fdopen");
 
+    send_line(out, argv[3]);
+
     int hand[HAND_SIZE];
     int hn = 0;
     Row rows[ROWS];
-    for (int r = 0; r < ROWS; r++) rows[r].len = 1, rows[r].cards[0] = 1;
+    memset(rows, 0, sizeof(rows));
 
     char line[LINE_MAX];
     while (recv_line(in, line, sizeof(line))) {
-        if (str_starts(line, "BIENVENUE ")) {
-            send_line(out, "INFO Robot connecte");
-            char buf[LINE_MAX];
-            snprintf(buf, sizeof(buf), "NOM %s", argv[3]);
-            send_line(out, buf);
-            continue;
-        }
-
-        if (str_starts(line, "ETAT ")) {
+        if (str_starts(line, "R1:")) {
             parse_table_rows(line, rows);
             continue;
         }
@@ -139,19 +121,20 @@ int main(int argc, char **argv) {
             continue;
         }
 
-        if (str_starts(line, "DEMANDE_CARTE")) {
-            int c = choose_card_heuristic(hand, hn, rows);
-            char cmd[64];
+        if (strcmp(line, "DEMANDE_CARTE") == 0) {
+            int c = choose_smallest_card(hand, hn);
+            if (c < 0) c = 0;
+            char cmd[32];
             snprintf(cmd, sizeof(cmd), "JOUER %d", c);
             send_line(out, cmd);
             remove_from_hand(hand, &hn, c);
             continue;
         }
 
-        if (str_starts(line, "CHOISIR_RANGEES")) {
+        if (strcmp(line, "CHOISIR_RANGEES") == 0) {
             int r = choose_row_min_bulls(rows) + 1;
-            char cmd[64];
-            snprintf(cmd, sizeof(cmd), "RANGE %d", r);
+            char cmd[16];
+            snprintf(cmd, sizeof(cmd), "%d", r);
             send_line(out, cmd);
             continue;
         }

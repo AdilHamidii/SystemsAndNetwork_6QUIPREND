@@ -3,7 +3,7 @@
 
 #define _POSIX_C_SOURCE 200112L
 
-/* ---------- Standard C ---------- */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -12,12 +12,12 @@
 #include <time.h>
 #include <stdarg.h>
 
-/* ---------- POSIX ---------- */
+
 #include <unistd.h>
 #include <fcntl.h>
 #include <signal.h>
 
-/* ---------- Networking ---------- */
+
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/select.h>
@@ -27,11 +27,11 @@
 
 
 
-// MULTI THREADING HEADERS 
+
 #include <pthread.h>
 
 
-/* ---------- Game constants ---------- */
+
 #define MAX_PLAYERS 10
 #define MIN_PLAYERS 2
 
