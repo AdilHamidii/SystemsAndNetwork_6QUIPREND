@@ -19,7 +19,7 @@
 #include <errno.h>
 
 static int global_game_id = 0;
-static pthread_mutex_t game_id_lock = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t game_id_lock = PTHREAD_MUTEX_INITIALIZER; // Protège l'accès à global_game_id avec un mutex pour que les threads soient sûrs d'obtenir des IDs uniques.
 
 typedef struct {
     int fd;
@@ -65,7 +65,7 @@ static void broadcast(Player *p, int n, const char *msg) {
             send_line(p[i].out, msg);
 }
 
-// Analyse sécurisée d'une commande JOUER envoyée par un client.
+// Analyse  d'une commande JOUER envoyée par un client.
 static int parse_play(const char *line, int *out) {
     while (*line && isspace((unsigned char)*line)) line++;
     if (strncasecmp(line, "JOUER", 5) == 0) {

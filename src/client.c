@@ -4,16 +4,9 @@
 #include "headers/net.h"
 #include "headers/util.h"
 
-static void sendf(FILE *out, const char *fmt, ...) {
-    char buf[LINE_MAX];
-    va_list ap;
-    va_start(ap, fmt);
-    vsnprintf(buf, sizeof(buf), fmt, ap);
-    va_end(ap);
-    send_line(out, buf);
-}
 
-static int looks_like_int(const char *s) {
+
+static int est_entier_valide(const char *s) {
     while (*s && isspace((unsigned char)*s)) s++;
     if (*s == '+' || *s == '-') s++;
     if (!isdigit((unsigned char)*s)) return 0;
@@ -22,9 +15,9 @@ static int looks_like_int(const char *s) {
     return *s == 0;
 }
 
-static int looks_like_play(const char *s) {
+static int est_commande_jouer(const char *s) {
     while (*s && isspace((unsigned char)*s)) s++;
-    if (looks_like_int(s)) return 1;
+    if (est_entier_valide(s)) return 1;
     if (tolower((unsigned char)s[0])=='j' &&
         tolower((unsigned char)s[1])=='o' &&
         tolower((unsigned char)s[2])=='u' &&
@@ -59,7 +52,7 @@ int main(int argc, char **argv) {
                 fflush(stdout);
                 if (!fgets(cmd, sizeof(cmd), stdin)) return 0;
                 trim_crlf(cmd);
-                if (looks_like_play(cmd)) break;
+                if (est_commande_jouer(cmd)) break;
                 printf("Commande invalide. Exemple: JOUER 42 (ou juste 42)\n");
             }
             send_line(out, cmd);
@@ -72,7 +65,7 @@ int main(int argc, char **argv) {
                 fflush(stdout);
                 if (!fgets(cmd, sizeof(cmd), stdin)) return 0;
                 trim_crlf(cmd);
-                if (looks_like_int(cmd)) break;
+                if (est_entier_valide(cmd)) break;
                 printf("Choix invalide. Entrez un numero (1-4)\n");
             }
             send_line(out, cmd);

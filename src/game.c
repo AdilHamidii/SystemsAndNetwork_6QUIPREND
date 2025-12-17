@@ -201,58 +201,7 @@ int game_place_card(Game *g, int pid, int c,
  return 1;
 }
 
-// Application d’un tour complet
-void game_apply_turn(Game *g,
- int chosen_row[MAX_PLAYERS],
- int out_taken_row[MAX_PLAYERS],
- int out_bulls[MAX_PLAYERS]) {
 
- int order[MAX_PLAYERS];
-
- // Initialisation de l’ordre des joueurs
- for (int i = 0; i < g->nplayers; i++) order[i] = i;
-
- // Tri des joueurs selon la carte jouée (ordre croissant)
- for (int i = 0; i < g->nplayers; i++) {
- for (int j = i + 1; j < g->nplayers; j++) {
- int pi = order[i], pj = order[j];
- if (g->carte_jouee[pj] < g->carte_jouee[pi]) {
- int t = order[i];
- order[i] = order[j];
- order[j] = t;
- }
- }
- }
- // Placement des cartes dans l’ordre
- for (int i = 0; i < g->nplayers; i++) {
- int pid = order[i];
- int c = g->carte_jouee[pid];
- int tr = -1, bt = 0;
-
- game_place_card(g, pid, c, chosen_row[pid], &tr, &bt);
- out_taken_row[pid] = tr;
- out_bulls[pid] = bt;
- }
- // Réinitialisation des cartes jouées
- for (int p = 0; p < g->nplayers; p++)
- g->carte_jouee[p] = -1;
-
- g->tour++;
-
- // Fin de manche
- if (g->tour > HAND_SIZE) {
- g->manche++;
- g->tour = 1;
-
- // Vérification s’il reste assez de cartes
- if (g->top + ROWS + g->nplayers * HAND_SIZE > DECK_SIZE) {
- g->fin = 1;
- } else {
- game_setup_rows(g);
- game_deal(g);
- }
- }
-}
 
 // Vérifie si la partie est terminée
 int game_over(Game *g, int limit) {
